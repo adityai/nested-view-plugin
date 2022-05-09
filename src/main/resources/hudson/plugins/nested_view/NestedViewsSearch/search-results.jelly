@@ -21,7 +21,7 @@
             <ol>
                             <j:forEach var="hit" items="${hits}">
                                 <li>
-                                        <a href="${hit.getSearchUrl()}">${hit.getSearchName()}</a>
+                                        ${hit.project.getHello()} <a href="${hit.getSearchUrl()}">${hit.getSearchName()}</a>
                                 </li>
                             </j:forEach>
             </ol>

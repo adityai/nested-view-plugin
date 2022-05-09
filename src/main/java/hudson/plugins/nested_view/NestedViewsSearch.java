@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -248,6 +249,14 @@ public class NestedViewsSearch extends Search {
                 return nameOrPath.contains(queryOrPart);
             }
         }
+
+        public Optional<AbstractProject> getProject() {
+            if (item instanceof  AbstractProject){
+                return Optional.of((AbstractProject)item);
+            } else {
+                return Optional.empty();
+            }
+        }
     }
 
     private static transient volatile List<NamableWithClass> allCache = new ArrayList(0);
@@ -291,6 +300,7 @@ public class NestedViewsSearch extends Search {
     private static class NestedViewsSearchResult implements SearchItem, Comparable {
         private final String searchName;
         private final String searchUrl;
+        private final ProjectWrapper project;
 
         @Override
         public String getSearchName() {
@@ -307,9 +317,10 @@ public class NestedViewsSearch extends Search {
             return null;
         }
 
-        public NestedViewsSearchResult(String searchName, String searchUrl) {
+        public NestedViewsSearchResult(String searchName, String searchUrl, Optional<AbstractProject> project) {
             this.searchName = searchName;
             this.searchUrl = searchUrl;
+            this.project = new ProjectWrapper(project);
         }
 
         @Override
@@ -326,6 +337,10 @@ public class NestedViewsSearch extends Search {
         public int compareTo(Object o) {
             return this.toString().length() - o.toString().length();
         }
+
+        public ProjectWrapper getProject() {
+            return project;
+        }
     }
 
     private final static Logger LOGGER = Logger.getLogger(Search.class.getName());
@@ -341,7 +356,7 @@ public class NestedViewsSearch extends Search {
             if (this.query.isNonTrivial(false)) {
                 for (NamableWithClass item : allCache) {
                     if (item.matches(this.query)) {
-                        hits.add(new NestedViewsSearchResult(item.getUsefulName(), item.getUrl()));
+                        hits.add(new NestedViewsSearchResult(item.getUsefulName(), item.getUrl(), item.getProject()));
                     }
                 }
             }
@@ -359,7 +374,7 @@ public class NestedViewsSearch extends Search {
         if (this.query.isNonTrivial(true)) {
             for (NamableWithClass item : allCache) {
                 if (item.matches(this.query)) {
-                    suggestedItems.add(new SuggestedItem(new NestedViewsSearchResult(item.getUsefulName(), item.getUrl())));
+                    suggestedItems.add(new SuggestedItem(new NestedViewsSearchResult(item.getUsefulName(), item.getUrl(), item.getProject())));
                 }
             }
         }
